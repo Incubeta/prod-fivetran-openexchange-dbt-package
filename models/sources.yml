@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: openexchange_rates
+    database: "{{var('openexchange_rates_database',target.database)}}"
+    schema: "{{var('openexchange_rates_schema', target.dataset)}}"
+    tables:
+      - name: openexchange_report-v1
+        identifier: "{{var('openexchange_rates__openexchange_report-v1','openexchange_report-v1')}}"

@@ -1,69 +1,97 @@
-# Fivetran dbt Transformations Template  
+# Openexchange dbt Package
 
-Welcome to the Fivetran dbt Transformations Template! This repository provides a starter dbt project for building and managing data transformations on top of Fivetran connectors.  
+Welcome to the Openexchange dbt Package! This repository provides a dbt package for transforming and modeling data from the Openexchange API via Fivetran.
 
 ---
 
 ## Getting Started  
 
 ### Prerequisites  
-- **Python 3.x** installed  
-- **pipenv** for managing virtual environments  
+- A working **dbt** installation
+- Fivetran Openexchange connector set up and syncing data to your data warehouse
 
 ---
+### Installation & Setup  
 
-### Setup  
-
-1. **Clone the Repository**  
-   ```bash
-   git clone https://github.com/yourusername/repository-name.git
-   cd repository-name
+1. **Add the Package to Your `packages.yml`**  
+   ```yaml
+   packages:
+     - git: "https://github.com/incubeta/prod-fivetran-openexchange-dbt-package.git"
+       revision: main # or specify a version tag
    ```
 
-   > **Important:** Replace `repository-name` with the actual name of your repository.  
-
-2. **Install Dependencies**  
-   Use `pipenv` to create a virtual environment and install dependencies:  
+2. **Run `dbt deps` to Install the Package**  
    ```bash
-   pipenv install
+   dbt deps
    ```
 
-3. **Activate the Virtual Environment**  
-   ```bash
-   pipenv shell
+3. **Configure Required Variables**  
+   Add the following variables to your `dbt_project.yml` file:
+   ```yaml
+   vars:
+     openexchange_rates_database: "your_gcp_project_id"  # GCP project ID
+     openexchange_rates_schema: "your_dataset_name"      # BigQuery dataset name
    ```
 
-4. **Initialize the dbt Project**  
+4. **Run the Models**  
    ```bash
-   dbt init .
+   dbt run --select openexchange  # Run all openexchange models
+   dbt test --select openexchange # Test all openexchange models
    ```
 
-5. **Configure dbt**  
-   Update the `profiles.yml` file with your database credentials. For more information, refer to the [dbt documentation](https://docs.getdbt.com/docs/configure-your-profile).
+5. **Using the Model in Your Project**  
+   This package provides a staging model that you can reference in your own models:
 
-6. **Run dbt Commands**  
-   Use the following commands to build and test your models:  
-   ```bash
-   dbt run    # Execute models
-   dbt test   # Run tests on models
-   dbt docs generate  # Generate project documentation
-   dbt docs serve     # View documentation in a web browser
+   ```sql
+   -- Example: Create a model that uses the openexchange staging model
+   WITH exchange_rates AS (
+     SELECT * FROM {{ ref('stg_openexchange_rates__openexchange_report_v1') }}
+   )
+   
+   SELECT 
+     date,
+     currency,
+     rate,
+     -- Your transformations here
+   FROM exchange_rates
    ```
 
----
+## Required Variables
 
-## Repository Structure  
+This package requires the following variables to be set in your `dbt_project.yml` file:
 
+- **openexchange_rates_database**: The GCP project ID where your Openexchange data is stored
+- **openexchange_rates_schema**: The BigQuery dataset name containing the Openexchange data
+
+Example configuration:
+```yaml
+vars:
+  openexchange_rates_database: "my-gcp-project-id"
+  openexchange_rates_schema: "fivetran_openexchange"
 ```
-repository-name/
-├── models/                # dbt models (transformations)
-├── tests/                 # Test files for models
+
+## Available Models
+
+This package provides the following staging model that you can reference in your dbt project:
+
+- **stg_openexchange_rates__openexchange_report_v1**: The main staging model containing currency exchange rate data
+
+To reference this model in your own dbt models, use:
+```sql
+{{ ref('stg_openexchange_rates__openexchange_report_v1') }}
+```
+
+---
+
+## Package Structure  
+```
+openexchange-dbt-package/
+├── models/                # dbt models for Openexchange data
 ├── macros/                # Custom dbt macros
-├── snapshots/             # dbt snapshots (if needed)
-├── analyses/              # Analysis files
-├── dbt_project.yml        # Main dbt configuration file
-├── README.md              # Project README
-└── Pipfile                # pipenv configuration
+├── tests/                 # Test files for models
+├── dbt_project.yml        # Package configuration file
+├── README.md              # Package documentation
+└── packages.yml           # Package dependencies
 ```
 
 ---
@@ -79,7 +107,7 @@ repository-name/
 ## Documentation  
 
 - [dbt Documentation](https://docs.getdbt.com/) – Learn more about dbt features, setup, and usage.  
-- [Fivetran Transformations Documentation](https://fivetran.com/docs/transformations) – Explore how to create and manage transformations in Fivetran.  
+- [Fivetran Openexchange Connector Documentation](https://fivetran.com/docs/applications/openexchange) – Learn about the Fivetran Openexchange connector.
 
 ---
 
@@ -90,4 +118,4 @@ We welcome contributions! Please submit a pull request or open an issue for any 
 ---
 
 
-**Happy Transforming!** 🎉
+**Happy Currency Converting!** 💱
